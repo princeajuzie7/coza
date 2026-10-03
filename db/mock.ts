@@ -3,73 +3,83 @@ import { dirname, join } from "node:path";
 
 import type { CheckIn } from "./schema";
 
-const STORE = join(process.cwd(), ".data", "check-ins.json");
+const STORE_FILE = join(process.cwd(), ".data", "check-ins.json");
+
+type MockStore = { rows: CheckIn[]; warned: boolean };
 
 /**
- * Stand-in for Postgres while DATABASE_URL is unset, so the form can be used
- * end to end before the database exists.
+ * Stand-in for Postgres while DATABASE_URL is unset, so the app can be used end
+ * to end — including a deployed preview — before the database exists.
  *
- * File-backed rather than in-memory: Next's dev server re-evaluates modules on
- * every edit, which would wipe an array and make the duplicate check look
- * flaky. It also leaves something readable to inspect before the dashboard is built.
+ * Memory is the source of truth and the file is only a development
+ * convenience: a serverless filesystem is read-only, so persistence is
+ * attempted and allowed to fail rather than being required.
+ *
+ * Pinned to globalThis so Next's dev server keeps the rows across hot reloads,
+ * which would otherwise wipe them on every edit and make the duplicate check
+ * look intermittent.
  *
  * ponytail: delete this file the day DATABASE_URL is set — it is scaffolding,
- * not a fallback worth maintaining.
+ * not a storage layer.
  */
-export const USING_MOCK = !process.env.DATABASE_URL;
+const globalRef = globalThis as typeof globalThis & { __cozaMockStore?: MockStore };
 
-/** Reads the mock store. Exported so admin queries can see the same rows. */
-export function readMockRows(): CheckIn[] {
-  assertNotProduction();
-  return read();
-}
+const store: MockStore = (globalRef.__cozaMockStore ??= { rows: readSeedFile(), warned: false });
 
-function read(): CheckIn[] {
+function readSeedFile(): CheckIn[] {
   try {
-    return existsSync(STORE) ? (JSON.parse(readFileSync(STORE, "utf8")) as CheckIn[]) : [];
+    return existsSync(STORE_FILE) ? (JSON.parse(readFileSync(STORE_FILE, "utf8")) as CheckIn[]) : [];
   } catch {
+    // No file, or an unreadable one: start empty rather than refusing to boot.
     return [];
   }
 }
 
-function write(rows: CheckIn[]) {
-  mkdirSync(dirname(STORE), { recursive: true });
-  writeFileSync(STORE, JSON.stringify(rows, null, 2));
-}
-
-/**
- * Silently reading or writing attendance from a temp file on a deployed server
- * would lose real data, so the mock refuses to run there.
- *
- * Checked per call, not at module load: `next build` runs with
- * NODE_ENV=production, and merely importing this during a build is harmless —
- * it is serving a request from it that is not.
- */
-function assertNotProduction() {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("DATABASE_URL is required in production — the mock store is for local development only.");
+/** Best-effort. Read-only filesystems (most hosts) simply skip this. */
+function persist() {
+  try {
+    mkdirSync(dirname(STORE_FILE), { recursive: true });
+    writeFileSync(STORE_FILE, JSON.stringify(store.rows, null, 2));
+  } catch {
+    // Expected in production; memory already holds the write.
   }
 }
 
+function warnOnce() {
+  if (store.warned) return;
+  store.warned = true;
+
+  console.warn(
+    process.env.NODE_ENV === "production"
+      ? "[db] No DATABASE_URL — running on the in-memory mock. Check-ins are NOT persisted and are lost on restart or scale-out."
+      : `[db] No DATABASE_URL — using the mock store at ${STORE_FILE}.`
+  );
+}
+
+/** Reads the mock store. Exported so admin queries see the same rows. */
+export function readMockRows(): CheckIn[] {
+  warnOnce();
+  return store.rows;
+}
+
+export const USING_MOCK = !process.env.DATABASE_URL;
+
 export function createMockDb() {
-  console.warn(`[db] No DATABASE_URL — using the mock store at ${STORE}. Nothing is persisted to Postgres.`);
+  warnOnce();
 
   return {
     insert: () => ({
       values: async (row: CheckIn) => {
-        assertNotProduction();
-        const rows = read();
-
         // Mirrors unique(service_date, phone), down to the SQLSTATE the action
         // catches, so the duplicate path is exercised rather than stubbed out.
-        if (rows.some((r) => r.serviceDate === row.serviceDate && r.phone === row.phone)) {
+        if (store.rows.some((r) => r.serviceDate === row.serviceDate && r.phone === row.phone)) {
           throw Object.assign(new Error('duplicate key value violates unique constraint "unique_check_in_per_day"'), {
             code: "23505",
           });
         }
 
-        rows.push({ ...row, createdAt: new Date() } as CheckIn);
-        write(rows);
+        store.rows.push({ ...row, createdAt: new Date() } as CheckIn);
+        persist();
         return [row];
       },
     }),
