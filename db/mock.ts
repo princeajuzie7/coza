@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
+import { seedCheckIns } from "./seed";
 import type { CheckIn } from "./schema";
 
 const STORE_FILE = join(process.cwd(), ".data", "check-ins.json");
@@ -24,15 +25,25 @@ type MockStore = { rows: CheckIn[]; warned: boolean };
  */
 const globalRef = globalThis as typeof globalThis & { __cozaMockStore?: MockStore };
 
-const store: MockStore = (globalRef.__cozaMockStore ??= { rows: readSeedFile(), warned: false });
+const store: MockStore = (globalRef.__cozaMockStore ??= { rows: initialRows(), warned: false });
 
-function readSeedFile(): CheckIn[] {
+/**
+ * A local .data file wins when present, so your own seeding and any check-ins
+ * made during development survive a restart. Everywhere else — a deploy, a
+ * fresh clone — the bundled demo season is used, so the app is never empty in
+ * front of the church.
+ */
+function initialRows(): CheckIn[] {
   try {
-    return existsSync(STORE_FILE) ? (JSON.parse(readFileSync(STORE_FILE, "utf8")) as CheckIn[]) : [];
+    if (existsSync(STORE_FILE)) {
+      const fromFile = JSON.parse(readFileSync(STORE_FILE, "utf8")) as CheckIn[];
+      if (fromFile.length > 0) return fromFile;
+    }
   } catch {
-    // No file, or an unreadable one: start empty rather than refusing to boot.
-    return [];
+    // Unreadable or not there; fall through to the bundled season.
   }
+
+  return seedCheckIns();
 }
 
 /** Best-effort. Read-only filesystems (most hosts) simply skip this. */
