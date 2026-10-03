@@ -39,12 +39,35 @@ export async function getServiceDates(): Promise<string[]> {
   return rows.map((r) => r.serviceDate);
 }
 
-/** Everyone ever seen, so "expected today" can be derived for absence. */
-export async function getKnownAttendees(): Promise<Array<{ phone: string; fullName: string; group: CheckIn["group"] }>> {
+export type KnownAttendee = {
+  phone: string;
+  fullName: string;
+  group: CheckIn["group"];
+  email: string | null;
+  /** The most recent service they appeared on. */
+  lastSeen: string;
+};
+
+/**
+ * Everyone ever seen, with the last service they attended. The last-seen date
+ * is what makes an absence actionable — "missing" alone is not a work queue.
+ */
+export async function getKnownAttendees(): Promise<KnownAttendee[]> {
   if (USING_MOCK) {
-    const seen = new Map<string, { phone: string; fullName: string; group: CheckIn["group"] }>();
-    for (const r of readMockRows()) seen.set(r.phone, { phone: r.phone, fullName: r.fullName, group: r.group });
-    return [...seen.values()];
+    const latest = new Map<string, KnownAttendee>();
+    for (const r of readMockRows()) {
+      const seen = latest.get(r.phone);
+      if (!seen || r.serviceDate > seen.lastSeen) {
+        latest.set(r.phone, {
+          phone: r.phone,
+          fullName: r.fullName,
+          group: r.group,
+          email: r.email,
+          lastSeen: r.serviceDate,
+        });
+      }
+    }
+    return [...latest.values()];
   }
 
   return db
@@ -52,9 +75,11 @@ export async function getKnownAttendees(): Promise<Array<{ phone: string; fullNa
       phone: checkIns.phone,
       fullName: checkIns.fullName,
       group: checkIns.group,
+      email: checkIns.email,
+      lastSeen: checkIns.serviceDate,
     })
     .from(checkIns)
-    .orderBy(checkIns.phone, desc(checkIns.checkedInAt));
+    .orderBy(checkIns.phone, desc(checkIns.serviceDate));
 }
 
 export type ServiceTotals = {

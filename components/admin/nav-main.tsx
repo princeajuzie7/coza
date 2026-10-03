@@ -32,7 +32,7 @@ export function NavMain({ items, label }: { items: NavItem[]; label: string }) {
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="font-mono text-[9px] tracking-[0.2em] uppercase">{label}</SidebarGroupLabel>
-      <SidebarMenu>
+      <SidebarMenu className="gap-1.5">
         {items.map((item) => (
           <SidebarMenuItem key={item.url}>
             <SidebarMenuButton

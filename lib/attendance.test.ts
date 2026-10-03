@@ -15,25 +15,25 @@ import {
 // Lagos is UTC+1 year round, so a UTC literal is an unambiguous Lagos clock time.
 const at = (utc: string) => new Date(utc);
 
-test("a member is early up to 06:59 and late from 07:00", () => {
-  assert.equal(punctuality("member", at("2026-10-04T05:59:00Z")), "early"); // 06:59
-  assert.equal(punctuality("member", at("2026-10-04T06:00:00Z")), "late"); // 07:00 exactly
-  assert.equal(punctuality("member", at("2026-10-04T06:00:30Z")), "late"); // the 07:00:30 hole
+test("a member is early up to 08:44 and late from 08:45", () => {
+  assert.equal(punctuality("member", at("2026-10-04T07:44:00Z")), "early"); // 08:44
+  assert.equal(punctuality("member", at("2026-10-04T07:45:00Z")), "late"); // 08:45 exactly
+  assert.equal(punctuality("member", at("2026-10-04T07:45:30Z")), "late"); // the 08:45:30 hole
 });
 
-test("workforce is held to the earlier 06:40 cutoff", () => {
-  assert.equal(punctuality("workforce", at("2026-10-04T05:39:00Z")), "early"); // 06:39
-  assert.equal(punctuality("workforce", at("2026-10-04T05:40:00Z")), "late"); // 06:40 exactly
+test("workforce is held to the earlier 07:30 cutoff", () => {
+  assert.equal(punctuality("workforce", at("2026-10-04T06:29:00Z")), "early"); // 07:29
+  assert.equal(punctuality("workforce", at("2026-10-04T06:30:00Z")), "late"); // 07:30 exactly
 });
 
 test("the same arrival is early for a member and late for workforce", () => {
-  const sixFifty = at("2026-10-04T05:50:00Z");
-  assert.equal(punctuality("member", sixFifty), "early");
-  assert.equal(punctuality("workforce", sixFifty), "late");
+  const eightOClock = at("2026-10-04T07:00:00Z"); // 08:00 — inside the member window, past workforce
+  assert.equal(punctuality("member", eightOClock), "early");
+  assert.equal(punctuality("workforce", eightOClock), "late");
 });
 
-test("ticking 'early' at 07:05 does not help: the clock decides", () => {
-  assert.equal(punctuality("member", at("2026-10-04T06:05:00Z")), "late");
+test("ticking 'early' at 08:50 does not help: the clock decides", () => {
+  assert.equal(punctuality("member", at("2026-10-04T07:50:00Z")), "late");
 });
 
 test("times are read in Lagos, not on the server's clock", () => {
@@ -49,8 +49,8 @@ test("a check-in just after Lagos midnight belongs to the new day, and reads as 
 });
 
 test("cutoffs render as the times the church published", () => {
-  assert.equal(formatCutoff(CUTOFF_MINUTES.workforce), "6:40 AM");
-  assert.equal(formatCutoff(CUTOFF_MINUTES.member), "7:00 AM");
+  assert.equal(formatCutoff(CUTOFF_MINUTES.workforce), "7:30 AM");
+  assert.equal(formatCutoff(CUTOFF_MINUTES.member), "8:45 AM");
   assert.equal(formatCutoff(0), "12:00 AM");
 });
 

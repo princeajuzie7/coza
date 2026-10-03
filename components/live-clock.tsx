@@ -64,9 +64,10 @@ export function StubClock({ group, frozen = false }: { group: AttendeeGroup; fro
         </div>
 
         <div className="text-right">
-          <p className="font-mono text-[10px] tracking-[0.22em] uppercase opacity-60">
-            {verdict === "late" ? "Closed" : "Closes"}
-          </p>
+          {/* A constant label, matching the wording on the landing doors.
+              "Closed · 7:30 AM" read as though 7:30 itself were closed; the
+              sentence under the bar already says whether the window has shut. */}
+          <p className="font-mono text-[10px] tracking-[0.22em] uppercase opacity-60">Be seated by</p>
           <p className="mt-1 font-mono text-[22px] leading-none font-semibold tabular-nums">
             {formatCutoff(CUTOFF_MINUTES[group])}
           </p>
@@ -96,8 +97,8 @@ export function StubClock({ group, frozen = false }: { group: AttendeeGroup; fro
 
       <p className="text-[11px] leading-relaxed opacity-60">
         {verdict === "late"
-          ? "The early window has closed — you will be recorded as late."
-          : "You are inside the early window. Submit before the time above."}
+          ? `It is past ${formatCutoff(CUTOFF_MINUTES[group])} — this check-in will be recorded as late.`
+          : `You are on time. Submit before ${formatCutoff(CUTOFF_MINUTES[group])} to stay early.`}
       </p>
     </div>
   );

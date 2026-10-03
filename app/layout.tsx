@@ -41,7 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" suppressHydrationWarning className={`${archivo.variable} ${geistMono.variable} ${instrumentSans.variable} ${jetbrainsMono.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <ThemeProvider attribute="class" defaultTheme="white" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
           <Toaster position="top-center" richColors />
         </ThemeProvider>

@@ -16,12 +16,13 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { ArrowIcon, MembersIcon, OverviewIcon, RegisterIcon, WorkforceIcon } from "./icons";
+import { AbsentIcon, ArrowIcon, MembersIcon, OverviewIcon, RegisterIcon, WorkforceIcon } from "./icons";
 import { NavMain, type NavItem } from "./nav-main";
 
 const SERVICE_NAV: NavItem[] = [
   { title: "Overview", url: "/admin", icon: OverviewIcon },
   { title: "Register", url: "/admin/register", icon: RegisterIcon },
+  { title: "Follow-up", url: "/admin/follow-up", icon: AbsentIcon },
 ];
 
 const CHECK_IN_NAV: NavItem[] = [
@@ -50,7 +51,7 @@ export function AdminSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="px-2 pb-3">
-        <SidebarMenu>
+        <SidebarMenu className="gap-1.5">
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Church website"

@@ -19,8 +19,8 @@ export type AttendanceMode = "in_person" | "online";
  * `service_windows` table the first time a special service needs its own times.
  */
 export const CUTOFF_MINUTES: Record<AttendeeGroup, number> = {
-  workforce: 6 * 60 + 40, // 06:40
-  member: 7 * 60, // 07:00
+  workforce: 7 * 60 + 30, // 07:30
+  member: 8 * 60 + 45, // 08:45
 };
 
 export const GROUP_LABEL: Record<AttendeeGroup, string> = {
@@ -118,7 +118,7 @@ export function punctuality(group: AttendeeGroup, at: Date): Punctuality {
   return minutesOfDay(at) < CUTOFF_MINUTES[group] ? "early" : "late";
 }
 
-/** "6:40 AM" — for labels, from a minutes-after-midnight cutoff. */
+/** "7:30 AM" — for labels, from a minutes-after-midnight cutoff. */
 export function formatCutoff(minutes: number): string {
   const hour = Math.floor(minutes / 60);
   const minute = minutes % 60;

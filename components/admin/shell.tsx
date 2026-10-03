@@ -85,35 +85,3 @@ export function Panel({
     </section>
   );
 }
-
-/** The date rail — only days we actually hold data for. */
-export function ServiceDateRail({
-  dates,
-  active,
-  today,
-  basePath,
-}: {
-  dates: string[];
-  active: string;
-  today: string;
-  basePath: string;
-}) {
-  return (
-    <nav className="flex flex-wrap items-center gap-1.5">
-      {dates.map((d) => (
-        <a
-          key={d}
-          href={d === today ? basePath : `${basePath}?date=${d}`}
-          className={cn(
-            "rounded-full border px-3 py-1.5 font-mono text-[11px] tabular-nums transition-colors",
-            d === active
-              ? "border-foreground bg-foreground text-background"
-              : "border-border bg-card text-muted-foreground hover:text-foreground"
-          )}
-        >
-          {d === today ? "Today" : d.slice(5)}
-        </a>
-      ))}
-    </nav>
-  );
-}

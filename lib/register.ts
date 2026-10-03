@@ -128,3 +128,63 @@ export function percentDelta(current: number, previous: number): number | null {
   if (previous === 0) return current === 0 ? 0 : null;
   return ((current - previous) / previous) * 100;
 }
+
+// ─── Follow-up ───────────────────────────────────────────────────────────────
+
+export type FollowUpTier = "missed" | "drifting" | "lapsed";
+
+export type FollowUp = {
+  phone: string;
+  fullName: string;
+  group: AttendeeGroup;
+  email: string | null;
+  lastSeen: string;
+  /** How many services have run since they were last here. */
+  servicesAway: number;
+  tier: FollowUpTier;
+};
+
+export const FOLLOW_UP_TIERS: Record<FollowUpTier, { label: string; blurb: string; dot: string }> = {
+  missed: { label: "Missed today", blurb: "Here last service", dot: "bg-yellow-500" },
+  drifting: { label: "Drifting", blurb: "Away 2–4 services", dot: "bg-orange-500" },
+  lapsed: { label: "Lapsed", blurb: "Away 5 or more", dot: "bg-red-500" },
+};
+
+/**
+ * Turns "who isn't here" into "who to call first".
+ *
+ * A flat list of every absent name is unusable — someone who missed one Sunday
+ * and someone last seen in April need different conversations. Ranking by how
+ * many services they have missed is what makes it a queue.
+ *
+ * `serviceDates` must be every service on record, ascending.
+ */
+export function buildFollowUps(
+  known: Array<{ phone: string; fullName: string; group: AttendeeGroup; email: string | null; lastSeen: string }>,
+  presentPhones: Set<string>,
+  serviceDates: string[],
+  activeDate: string
+): FollowUp[] {
+  // Index once; this runs per absentee and the list can be long.
+  const positionOf = new Map(serviceDates.map((d, i) => [d, i]));
+  const activeIndex = positionOf.get(activeDate) ?? serviceDates.length - 1;
+
+  return known
+    .filter((k) => !presentPhones.has(k.phone))
+    // Someone whose last visit is after the service being viewed is not absent
+    // from it in any useful sense — they simply had not started yet.
+    .filter((k) => (positionOf.get(k.lastSeen) ?? -1) <= activeIndex)
+    .map((k) => {
+      const seenIndex = positionOf.get(k.lastSeen) ?? 0;
+      const servicesAway = Math.max(1, activeIndex - seenIndex);
+      const tier: FollowUpTier = servicesAway === 1 ? "missed" : servicesAway <= 4 ? "drifting" : "lapsed";
+      return { ...k, servicesAway, tier };
+    })
+    .sort((a, b) => a.servicesAway - b.servicesAway || a.fullName.localeCompare(b.fullName));
+}
+
+export const countByTier = (rows: FollowUp[]) => ({
+  missed: rows.filter((r) => r.tier === "missed").length,
+  drifting: rows.filter((r) => r.tier === "drifting").length,
+  lapsed: rows.filter((r) => r.tier === "lapsed").length,
+});

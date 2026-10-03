@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { arrivalBuckets, percentDelta, standingBreakdown, summarise, unitBreakdown } from "./register.ts";
+import {
+  arrivalBuckets,
+  buildFollowUps,
+  percentDelta,
+  standingBreakdown,
+  summarise,
+  unitBreakdown,
+} from "./register.ts";
 
 type Row = Parameters<typeof summarise>[0][number];
 
@@ -95,4 +102,65 @@ test("percent delta reports change, and admits when it cannot", () => {
   assert.equal(percentDelta(0, 0), 0, "nothing then nothing is no change, not a gap");
   // Growth from zero has no meaningful percentage — never print Infinity at a pastor.
   assert.equal(percentDelta(42, 0), null);
+});
+
+// ─── Follow-up ───────────────────────────────────────────────────────────────
+
+const DATES = ["2026-09-05", "2026-09-12", "2026-09-19", "2026-09-26", "2026-10-03"];
+
+const person = (name: string, lastSeen: string, group: "member" | "workforce" = "member") => ({
+  phone: `+234${name.length}${lastSeen.slice(-2)}`,
+  fullName: name,
+  group,
+  email: null,
+  lastSeen,
+});
+
+test("follow-ups rank by how many services someone has missed", () => {
+  const rows = buildFollowUps(
+    [
+      person("Lapsed Len", "2026-09-05"), // 4 services back
+      person("Missed Mo", "2026-09-26"), // last service
+      person("Drifting Dee", "2026-09-12"), // 3 back
+    ],
+    new Set(),
+    DATES,
+    "2026-10-03"
+  );
+
+  assert.deepEqual(
+    rows.map((r) => [r.fullName, r.servicesAway, r.tier]),
+    [
+      ["Missed Mo", 1, "missed"],
+      ["Drifting Dee", 3, "drifting"],
+      ["Lapsed Len", 4, "drifting"],
+    ],
+    "nearest misses come first — they are the ones worth calling"
+  );
+});
+
+test("anyone on today's register is not a follow-up", () => {
+  const absent = person("Missed Mo", "2026-09-26");
+  const present = person("Here Today", "2026-10-03");
+
+  const rows = buildFollowUps([absent, present], new Set([present.phone]), DATES, "2026-10-03");
+
+  assert.deepEqual(
+    rows.map((r) => r.fullName),
+    ["Missed Mo"],
+    "the one who checked in drops out; the one who did not remains"
+  );
+});
+
+test("someone who had not started yet is not counted absent from an earlier service", () => {
+  // Viewing 12 Sept: a person first seen on 3 Oct cannot have missed it.
+  const rows = buildFollowUps([person("Joined Later", "2026-10-03")], new Set(), DATES, "2026-09-12");
+  assert.deepEqual(rows, []);
+});
+
+test("five or more services away is a lapse, not a drift", () => {
+  const longDates = ["2026-08-01", ...DATES];
+  const rows = buildFollowUps([person("Gone Greg", "2026-08-01")], new Set(), longDates, "2026-10-03");
+  assert.equal(rows[0]!.servicesAway, 5);
+  assert.equal(rows[0]!.tier, "lapsed");
 });
