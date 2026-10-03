@@ -1,26 +1,176 @@
+/* globals.css — COZA Global brand palette (tailwind v4 + shadcn, oklch)
+   Sampled from cozaglobal.org: orange #F09035, purple #65188F, navy #06162A, cream #FEF5ED */
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --radius: 0.625rem;
+
+  --background: oklch(0.994 0.003 64);
+  --foreground: oklch(0.24 0.028 255);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.028 255);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.028 255);
+
+  /* COZA orange. Navy ink on top, not white: white on this orange is ~2.2:1 and fails AA. */
+  --primary: oklch(0.74 0.153 59.4);
+  --primary-foreground: oklch(0.199 0.046 254.6);
+
+  --secondary: oklch(0.962 0.016 310);
+  --secondary-foreground: oklch(0.402 0.181 309.5);
+
+  --muted: oklch(0.975 0.014 64.3);
+  --muted-foreground: oklch(0.5 0.025 262);
+
+  --accent: oklch(0.964 0.019 64);
+  --accent-foreground: oklch(0.402 0.181 309.5);
+
+  --destructive: oklch(0.58 0.22 27);
+
+  --border: oklch(0.915 0.008 262);
+  --input: oklch(0.915 0.008 262);
+  --ring: oklch(0.74 0.153 59.4);
+
+  --chart-1: oklch(0.74 0.153 59.4);
+  --chart-2: oklch(0.402 0.181 309.5);
+  --chart-3: oklch(0.55 0.11 255);
+  --chart-4: oklch(0.72 0.13 95);
+  --chart-5: oklch(0.6 0.12 190);
+
+  /* The dark rail. Deeper than the page in either theme so it always reads as a panel. */
+  --panel: oklch(0.145 0.038 255);
+  --panel-foreground: oklch(0.97 0.006 85);
+
+  /* The faces each surface uses. The admin overrides these on its own subtree. */
+  --font-ui: var(--font-archivo);
+  --font-numeric: var(--font-geist-mono);
+
+  --brand-orange: oklch(0.74 0.153 59.4);
+  --brand-purple: oklch(0.402 0.181 309.5);
+  --brand-navy: oklch(0.199 0.046 254.6);
+  --brand-cream: oklch(0.975 0.014 64.3);
+
+  --sidebar: oklch(0.975 0.014 64.3);
+  --sidebar-foreground: oklch(0.24 0.028 255);
+  --sidebar-primary: oklch(0.74 0.153 59.4);
+  --sidebar-primary-foreground: oklch(0.199 0.046 254.6);
+  --sidebar-accent: oklch(0.964 0.019 64);
+  --sidebar-accent-foreground: oklch(0.402 0.181 309.5);
+  --sidebar-border: oklch(0.915 0.008 262);
+  --sidebar-ring: oklch(0.74 0.153 59.4);
+}
+
+.dark {
+  --background: oklch(0.199 0.046 254.6);
+  --foreground: oklch(0.97 0.006 85);
+
+  --card: oklch(0.235 0.042 256);
+  --card-foreground: oklch(0.97 0.006 85);
+
+  --popover: oklch(0.25 0.042 256);
+  --popover-foreground: oklch(0.97 0.006 85);
+
+  --primary: oklch(0.76 0.152 60);
+  --primary-foreground: oklch(0.17 0.04 255);
+
+  --secondary: oklch(0.3 0.05 302);
+  --secondary-foreground: oklch(0.95 0.012 310);
+
+  --muted: oklch(0.27 0.035 256);
+  --muted-foreground: oklch(0.72 0.02 258);
+
+  --accent: oklch(0.32 0.07 308);
+  --accent-foreground: oklch(0.96 0.012 310);
+
+  --destructive: oklch(0.7 0.19 25);
+
+  --border: oklch(1 0 0 / 11%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.7 0.14 60);
+
+  --chart-1: oklch(0.76 0.152 60);
+  --chart-2: oklch(0.62 0.17 308);
+  --chart-3: oklch(0.68 0.12 255);
+  --chart-4: oklch(0.8 0.15 95);
+  --chart-5: oklch(0.7 0.12 190);
+
+  --panel: oklch(0.145 0.038 255);
+  --panel-foreground: oklch(0.97 0.006 85);
+
+  --brand-orange: oklch(0.76 0.152 60);
+  /* lifted off the sampled #65188F so it still reads against navy */
+  --brand-purple: oklch(0.52 0.195 309);
+  --brand-navy: oklch(0.145 0.038 255);
+  --brand-cream: oklch(0.93 0.02 66);
+
+  --sidebar: oklch(0.235 0.042 256);
+  --sidebar-foreground: oklch(0.97 0.006 85);
+  --sidebar-primary: oklch(0.76 0.152 60);
+  --sidebar-primary-foreground: oklch(0.17 0.04 255);
+  --sidebar-accent: oklch(0.32 0.07 308);
+  --sidebar-accent-foreground: oklch(0.96 0.012 310);
+  --sidebar-border: oklch(1 0 0 / 11%);
+  --sidebar-ring: oklch(0.7 0.14 60);
 }
 
 @theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-ui);
+  --font-display: var(--font-ui);
+  --font-mono: var(--font-numeric);
+  --font-heading: var(--font-ui);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-panel: var(--panel);
+  --color-panel-foreground: var(--panel-foreground);
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-purple: var(--brand-purple);
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-cream: var(--brand-cream);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground; }
+  html { @apply font-sans; }
 }
