@@ -36,7 +36,7 @@ import {
 } from "@/lib/register";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Overview" };
+export const metadata: Metadata = { title: "Overview · TrackMate" };
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ from?: string; to?: string }> };

@@ -1,5 +1,8 @@
 import type { AttendeeGroup } from "@/lib/attendance";
 
+/** The product. The church is CHURCH below; this is the thing they log into. */
+export const APP_NAME = "TrackMate";
+
 export const NO_BUS = "none" as const;
 
 export const CHURCH = {

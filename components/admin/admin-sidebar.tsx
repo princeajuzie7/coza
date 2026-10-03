@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import { CHURCH } from "@/constant";
+import { APP_NAME, CHURCH } from "@/constant";
 import {
   Sidebar,
   SidebarContent,
@@ -40,7 +40,7 @@ export function AdminSidebar() {
           </span>
           <span className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="text-[14px] leading-tight font-extrabold tracking-tight">{CHURCH.name}</span>
-            <span className="text-muted-foreground font-mono text-[9px] tracking-[0.2em] uppercase">Attendance</span>
+            <span className="text-muted-foreground font-mono text-[9px] tracking-[0.2em] uppercase">{APP_NAME}</span>
           </span>
         </Link>
       </SidebarHeader>

@@ -8,7 +8,7 @@ import { Suspense } from "react";
 import { LiveIndicator } from "./_live";
 
 export const metadata: Metadata = {
-  title: { default: "Admin · COZA Global", template: "%s · COZA Admin" },
+  title: { default: "TrackMate · COZA Global", template: "%s · TrackMate" },
   // These pages list names and phone numbers; keep them out of search indexes.
   robots: { index: false, follow: false },
 };

@@ -33,8 +33,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "COZA Global · Attendance",
-  description: "Sunday check-in for members and workforce at The Commonwealth of Zion Assembly.",
+  title: "COZA Global · TrackMate",
+  description: "TrackMate — Sunday check-in and attendance for The Commonwealth of Zion Assembly.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

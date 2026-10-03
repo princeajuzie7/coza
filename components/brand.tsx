@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { APP_NAME } from "@/constant";
 import { cn } from "@/lib/utils";
 
 /**
@@ -47,7 +48,7 @@ export function Wordmark({ onDark = false, href }: { onDark?: boolean; href?: st
             onDark ? "text-white/40" : "text-muted-foreground"
           )}
         >
-          Attendance
+          {APP_NAME}
         </span>
       </span>
     </span>
